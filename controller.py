@@ -1,6 +1,5 @@
 import sqlite3 as sql
 
-
 def createDB():
     conn = sql.connect("itinerario.db")
     conn.commit()
@@ -11,32 +10,31 @@ def createTable():
     cursor = conn.cursor()
     cursor.execute(
         """CREATE TABLE salidas (
-            origen text,
-            aeropuerto text,
+            destino varchar,
+            aeropuerto character,
             fecha date,
             hora time,
             vuelo integer,
-            aerolínea text
+            aerolínea varchar
         )"""
     )
     cursor.execute(
         """CREATE TABLE llegadas (
-            destino text,
-            aeropuerto text,
+            origen varchar,
+            aeropuerto character,
             fecha date,
             hora time,
             vuelo integer,
-            aerolínea text
+            aerolínea varchar
         )"""
     )
     conn.commit()
     conn.close()
 
-
 def insertSalida(itinerarios_salida):
     conn = sql.connect("itinerario.db")
     cursor = conn.cursor()
-    instruccion = f"INSERT INTO salidas (origen, aeropuerto, fecha, hora, vuelo, aerolínea) VALUES (?, ?, ?, ?, ?, ?)"
+    instruccion = f"INSERT INTO salidas (destino, aeropuerto, fecha, hora, vuelo, aerolínea) VALUES (?, ?, ?, ?, ?, ?)"
     for itinerario in itinerarios_salida:
         cursor.execute(instruccion, itinerario)
     conn.commit()
@@ -45,7 +43,7 @@ def insertSalida(itinerarios_salida):
 def insertLlegada(itinerarios_llegada):
     conn = sql.connect("itinerario.db")
     cursor = conn.cursor()
-    instruccion = f"INSERT INTO llegadas (destino, aeropuerto, fecha, hora, vuelo, aerolínea) VALUES (?, ?, ?, ?, ?, ?)"
+    instruccion = f"INSERT INTO llegadas (origen, aeropuerto, fecha, hora, vuelo, aerolínea) VALUES (?, ?, ?, ?, ?, ?)"
     for itinerario in itinerarios_llegada:
         cursor.execute(instruccion, itinerario)
     conn.commit()
@@ -80,14 +78,19 @@ def searchByVuelo(vuelo):
     conn.close()
     print(datos)
 
-def searchByOrigen(origen, aerolínea):
+def searchByOrigen(destino, aerolinea):
     conn = sql.connect("itinerario.db")
     cursor = conn.cursor()
-    instruccion = f"SELECT * FROM salidas WHERE origen = ? AND aerolínea = ?"
-    cursor.execute(instruccion, (origen, aerolínea))
+    instruccion = f"SELECT * FROM salidas WHERE destino = ? AND aerolínea = ?"
+    cursor.execute(instruccion, (destino, aerolinea))
     datos = cursor.fetchall()
     conn.close()
-    print(datos)
+    if datos:
+        print("Resultados de búsqueda en Salidas:")
+        for row in datos:
+            print(row)
+    else:
+        print("No se encontraron resultados para ese destino y aerolínea en Salidas.")
 
 def searchByVueloLlegadas(vuelo):
     conn = sql.connect("itinerario.db")
@@ -103,11 +106,11 @@ def searchByVueloLlegadas(vuelo):
     else:
         print("No se encontraron resultados para ese número de vuelo en Llegadas.")
 
-def searchByDestinoLlegadas(destino, aerolinea):
+def searchByDestinoLlegadas(origen, aerolinea):
     conn = sql.connect("itinerario.db")
     cursor = conn.cursor()
-    instruccion = f"SELECT * FROM llegadas WHERE destino = ? AND aerolínea = ?"
-    cursor.execute(instruccion, (destino, aerolinea))
+    instruccion = f"SELECT * FROM llegadas WHERE origen = ? AND aerolínea = ?"
+    cursor.execute(instruccion, (origen, aerolinea))
     datos = cursor.fetchall()
     conn.close()
     if datos:
@@ -115,8 +118,7 @@ def searchByDestinoLlegadas(destino, aerolinea):
         for row in datos:
             print(row)
     else:
-        print("No se encontraron resultados para ese destino y aerolínea en Llegadas.")
-
+        print("No se encontraron resultados para ese origen y aerolínea en Llegadas.")
 
 def updateFields():
     conn = sql.connect("itinerario.db")
@@ -125,16 +127,14 @@ def updateFields():
     cursor.execute(instruccion)
     conn.commit()
     conn.close()
-  
+
 def deleteRow():
     conn = sql.connect("itinerario.db")
     cursor = conn.cursor()
-    instruccion = f"DELETE FROM itinerario WHERE origen='SAN JUAN'"
+    instruccion = f"DELETE FROM itinerario WHERE destino='SAN JUAN'"
     cursor.execute(instruccion)
-    
     conn.commit()
     conn.close()
-    
 
 if __name__ == "__main__":
     #createDB()
@@ -196,9 +196,9 @@ if __name__ == "__main__":
             searchByVuelo(vuelo)
         
         elif opcion == "2":
-            origen = input("Ingrese el origen que desea buscar en Salidas: ")
+            destino = input("Ingrese el destino que desea buscar en Salidas: ")
             aerolinea = input("Ingrese la aerolínea que desea buscar en Salidas: ")
-            searchByOrigen(origen, aerolinea)
+            searchByOrigen(destino, aerolinea)
         
         elif opcion == "3":
             vuelo = input("Ingrese el número de vuelo que desea buscar en Llegadas: ")
@@ -206,10 +206,10 @@ if __name__ == "__main__":
             searchByVueloLlegadas(vuelo)
         
         elif opcion == "4":
-            destino = input("Ingrese el destino que desea buscar en Llegadas: ")
+            origen = input("Ingrese el origen que desea buscar en Llegadas: ")
             aerolinea = input("Ingrese la aerolínea que desea buscar en Llegadas: ")
             # Llama a una función de búsqueda en Llegadas
-            searchByDestinoLlegadas(destino, aerolinea)
+            searchByDestinoLlegadas(origen, aerolinea)
         
         elif opcion == "5":
             print("Saliendo del programa.")
