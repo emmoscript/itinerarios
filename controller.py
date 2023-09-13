@@ -120,6 +120,30 @@ def searchByDestinoLlegadas(origen, aerolinea):
     else:
         print("No se encontraron resultados para ese origen y aerolínea en Llegadas.")
 
+def searchByDestinoBidireccional(destino, aerolinea):
+    conn = sql.connect("itinerario.db")
+    cursor = conn.cursor()
+    
+    instruccion_salidas = f"SELECT * FROM salidas WHERE destino = ? AND aerolínea = ?"
+    cursor.execute(instruccion_salidas, (destino, aerolinea))
+    datos_salidas = cursor.fetchall()
+    
+    instruccion_llegadas = f"SELECT * FROM llegadas WHERE origen = ? AND aerolínea = ?"
+    cursor.execute(instruccion_llegadas, (destino, aerolinea))
+    datos_llegadas = cursor.fetchall()
+    
+    conn.close()
+    
+    if datos_salidas or datos_llegadas:
+        print("Resultados de búsqueda en Salidas:")
+        for row in datos_salidas:
+            print(row)
+        print("Resultados de búsqueda en Llegadas:")
+        for row in datos_llegadas:
+            print(row)
+    else:
+        print("No se encontraron resultados para ese destino y aerolínea en Salidas ni en Llegadas.")
+
 def updateFields():
     conn = sql.connect("itinerario.db")
     cursor = conn.cursor()
@@ -160,7 +184,6 @@ if __name__ == "__main__":
         ("SAN JUAN", "SJU", "2023-09-10", "12:44", 96, "Frontier Airlines"),
         ("TORTOLA", "EIS", "2023-09-10", "14:05", 411, "National Air Charters"),
         ("PROVIDENCIALES", "PLS", "2023-09-10", "14:25", 234, "interCaribbean Airways"),
-        ("NEW YORK", "JFK", "2023-09-10", "14:34", 210, "JetBlue"),
         ("ATLANTA", "ATL", "2023-09-10", "14:43", 1803, "Delta"),
         ("ORLANDO", "MCO", "2023-09-10", "15:02", 1406, "JetBlue"),
         ("FORT LAUDERDALE", "FLL", "2023-09-10", "15:50", 142, "Spirit"),
@@ -187,7 +210,8 @@ if __name__ == "__main__":
         print("2. Buscar por origen y aerolínea en Salidas")
         print("3. Buscar por número de vuelo en Llegadas")
         print("4. Buscar por destino y aerolínea en Llegadas")
-        print("5. Salir")
+        print("5. Buscar por destino y aerolínea en Salidas y Llegadas (Bidireccional)")
+        print("6. Salir")
         
         opcion = input("Ingrese el número de la opción que desea: ")
         
@@ -212,6 +236,11 @@ if __name__ == "__main__":
             searchByDestinoLlegadas(origen, aerolinea)
         
         elif opcion == "5":
+            destino = input("Ingrese el destino que desea buscar en Salidas y Llegadas: ")
+            aerolinea = input("Ingrese la aerolínea que desea buscar en Salidas y Llegadas: ")
+            searchByDestinoBidireccional(destino, aerolinea)
+        
+        elif opcion == "6":
             print("Saliendo del programa.")
             break
         
