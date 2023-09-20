@@ -1,5 +1,6 @@
 import sqlite3 as sql
 
+
 def createDB():
     conn = sql.connect("itinerario.db")
     conn.commit()
@@ -10,31 +11,41 @@ def createTable():
     cursor = conn.cursor()
     cursor.execute(
         """CREATE TABLE salidas (
-            destino varchar,
-            aeropuerto character,
+            origen text,
+            aeropuerto text,
             fecha date,
             hora time,
             vuelo integer,
-            aerolínea varchar
+            aerolínea text
         )"""
     )
     cursor.execute(
         """CREATE TABLE llegadas (
-            origen varchar,
-            aeropuerto character,
+            destino text,
+            aeropuerto text,
             fecha date,
             hora time,
             vuelo integer,
-            aerolínea varchar
+            aerolínea text
+        )"""
+    )
+    cursor.execute(
+        """CREATE TABLE mod (
+            caso text,
+            fecha date,
+            hora time,
+            vuelo integer,
+            aerolínea text
         )"""
     )
     conn.commit()
     conn.close()
 
+
 def insertSalida(itinerarios_salida):
     conn = sql.connect("itinerario.db")
     cursor = conn.cursor()
-    instruccion = f"INSERT INTO salidas (destino, aeropuerto, fecha, hora, vuelo, aerolínea) VALUES (?, ?, ?, ?, ?, ?)"
+    instruccion = f"INSERT INTO salidas (origen, aeropuerto, fecha, hora, vuelo, aerolínea) VALUES (?, ?, ?, ?, ?, ?)"
     for itinerario in itinerarios_salida:
         cursor.execute(instruccion, itinerario)
     conn.commit()
@@ -43,8 +54,17 @@ def insertSalida(itinerarios_salida):
 def insertLlegada(itinerarios_llegada):
     conn = sql.connect("itinerario.db")
     cursor = conn.cursor()
-    instruccion = f"INSERT INTO llegadas (origen, aeropuerto, fecha, hora, vuelo, aerolínea) VALUES (?, ?, ?, ?, ?, ?)"
+    instruccion = f"INSERT INTO llegadas (destino, aeropuerto, fecha, hora, vuelo, aerolínea) VALUES (?, ?, ?, ?, ?, ?)"
     for itinerario in itinerarios_llegada:
+        cursor.execute(instruccion, itinerario)
+    conn.commit()
+    conn.close()
+
+def insertCaso(itinerarios_caso):
+    conn = sql.connect("itinerario.db")
+    cursor = conn.cursor()
+    instruccion = f"INSERT INTO mod (caso, fecha, hora, vuelo, aerolínea) VALUES (?, ?, ?, ?, ?)"
+    for itinerario in itinerarios_caso:
         cursor.execute(instruccion, itinerario)
     conn.commit()
     conn.close()
@@ -78,19 +98,14 @@ def searchByVuelo(vuelo):
     conn.close()
     print(datos)
 
-def searchByOrigen(destino, aerolinea):
+def searchByOrigen(origen, aerolínea):
     conn = sql.connect("itinerario.db")
     cursor = conn.cursor()
-    instruccion = f"SELECT * FROM salidas WHERE destino = ? AND aerolínea = ?"
-    cursor.execute(instruccion, (destino, aerolinea))
+    instruccion = f"SELECT * FROM salidas WHERE origen = ? AND aerolínea = ?"
+    cursor.execute(instruccion, (origen, aerolínea))
     datos = cursor.fetchall()
     conn.close()
-    if datos:
-        print("Resultados de búsqueda en Salidas:")
-        for row in datos:
-            print(row)
-    else:
-        print("No se encontraron resultados para ese destino y aerolínea en Salidas.")
+    print(datos)
 
 def searchByVueloLlegadas(vuelo):
     conn = sql.connect("itinerario.db")
@@ -106,11 +121,11 @@ def searchByVueloLlegadas(vuelo):
     else:
         print("No se encontraron resultados para ese número de vuelo en Llegadas.")
 
-def searchByDestinoLlegadas(origen, aerolinea):
+def searchByDestinoLlegadas(destino, aerolinea):
     conn = sql.connect("itinerario.db")
     cursor = conn.cursor()
-    instruccion = f"SELECT * FROM llegadas WHERE origen = ? AND aerolínea = ?"
-    cursor.execute(instruccion, (origen, aerolinea))
+    instruccion = f"SELECT * FROM llegadas WHERE destino = ? AND aerolínea = ?"
+    cursor.execute(instruccion, (destino, aerolinea))
     datos = cursor.fetchall()
     conn.close()
     if datos:
@@ -118,8 +133,26 @@ def searchByDestinoLlegadas(origen, aerolinea):
         for row in datos:
             print(row)
     else:
-        print("No se encontraron resultados para ese origen y aerolínea en Llegadas.")
+        print("No se encontraron resultados para ese destino y aerolínea en Llegadas.")
 
+
+def updateFields():
+    conn = sql.connect("itinerario.db")
+    cursor = conn.cursor()
+    instruccion = f"UPDATE salidas SET vuelo=719 WHERE vuelo like '817'"
+    cursor.execute(instruccion)
+    conn.commit()
+    conn.close()
+  
+def deleteRow():
+    conn = sql.connect("itinerario.db")
+    cursor = conn.cursor()
+    instruccion = f"DELETE FROM itinerario WHERE origen='SAN JUAN'"
+    cursor.execute(instruccion)
+    
+    conn.commit()
+    conn.close()
+    
 def searchByDestinoBidireccional(destino, aerolinea):
     conn = sql.connect("itinerario.db")
     cursor = conn.cursor()
@@ -144,21 +177,37 @@ def searchByDestinoBidireccional(destino, aerolinea):
     else:
         print("No se encontraron resultados para ese destino y aerolínea en Salidas ni en Llegadas.")
 
-def updateFields():
+def searchVueloTridimensional(nvuelo):
     conn = sql.connect("itinerario.db")
     cursor = conn.cursor()
-    instruccion = f"UPDATE salidas SET vuelo=719 WHERE vuelo like '817'"
-    cursor.execute(instruccion)
-    conn.commit()
-    conn.close()
+    
+    instruccion_salidas = f"SELECT * FROM salidas WHERE vuelo = ?"
+    cursor.execute(instruccion_salidas,(nvuelo,))
+    datos_salidas = cursor.fetchall()
+    
+    instruccion_llegadas = f"SELECT * FROM llegadas WHERE vuelo = ?"
+    cursor.execute(instruccion_llegadas,(nvuelo,))
+    datos_llegadas = cursor.fetchall()
 
-def deleteRow():
-    conn = sql.connect("itinerario.db")
-    cursor = conn.cursor()
-    instruccion = f"DELETE FROM itinerario WHERE destino='SAN JUAN'"
-    cursor.execute(instruccion)
-    conn.commit()
+    instruccion_mod = f"SELECT * FROM mod WHERE vuelo = ?"
+    cursor.execute(instruccion_mod,(nvuelo,))
+    datos_mod = cursor.fetchall()
+    
     conn.close()
+    
+    if datos_salidas or datos_llegadas or datos_mod:
+        print("Resultados de búsqueda en Salidas:")
+        for row in datos_salidas:
+            print(row)
+        print("Resultados de búsqueda en Llegadas:")
+        for row in datos_llegadas:
+            print(row)
+        print("Resultados de búsqueda en Modificaciones:")
+        for row in datos_mod:
+            print(row)
+    else:
+        print("No se encontraron resultados para ese destino y aerolínea en Salidas ni en Llegadas.")
+
 
 if __name__ == "__main__":
     #createDB()
@@ -184,6 +233,7 @@ if __name__ == "__main__":
         ("SAN JUAN", "SJU", "2023-09-10", "12:44", 96, "Frontier Airlines"),
         ("TORTOLA", "EIS", "2023-09-10", "14:05", 411, "National Air Charters"),
         ("PROVIDENCIALES", "PLS", "2023-09-10", "14:25", 234, "interCaribbean Airways"),
+        ("NEW YORK", "JFK", "2023-09-10", "14:34", 210, "JetBlue"),
         ("ATLANTA", "ATL", "2023-09-10", "14:43", 1803, "Delta"),
         ("ORLANDO", "MCO", "2023-09-10", "15:02", 1406, "JetBlue"),
         ("FORT LAUDERDALE", "FLL", "2023-09-10", "15:50", 142, "Spirit"),
@@ -196,9 +246,31 @@ if __name__ == "__main__":
         ("HOLGUÍN/CUBA", "HOG", "2023-09-10", "18:00", 1906, "Frontier Airlines"),
         ("CAMAGUEY/CUBA", "CMW", "2023-09-10", "18:00", 832, "Frontier Airlines")
     ]
+    itinerarios_caso = [
+        ("ATRASADO","2023-09-10", "11:34", 97, "JetBlue"),
+        ("CANCELADO","2023-09-10", "17:36", 1638, "JetBlue"),
+        ("ATRASADO","2023-09-10", "18:00", 832, "Frontier Airlines"),
+          ("ATRASADO","2023-09-10", "12:44", 96, "Frontier Airlines"),
+        ("CANCELADO","2023-09-10", "14:05", 411, "National Air Charters")
+    ]
+    itinerarios_caso_tridiagonal = [
+        ["ATRASADO","2023-09-10", "","", "                                    "],
+        ["CANCELADO","2023-09-10", "17:36","", "                             "],
+        ["          ","2023-09-10", "18:00", 832, "                         "],
+          ["            ","             ", "12:44", 96, "Frontier Airlines       "],
+        ["             ","           ", "         ", 411, "National Air Charters"],    
+    ]
+    itinerarios_caso_poco_denso = [
+        ("ATRASADO","2023-09-10", "         ", 97, "JetBlue"),
+        ("         ","2023-09-10", "         ", "         ", "JetBlue"),
+        ("         ","         ", "18:00", "         ", "         "),
+          ("      ","         ", "         ", "         ", "Frontier Airlines"),
+        ("CANCELADO","2023-09-10", "14:05", 411, "         ")
+    ]        
     #insertSalida(itinerarios_salida)
     #insertLlegada(itinerarios_llegada)
     #readOrdered("vuelo")
+    #insertCaso(itinerarios_caso)
     #search()
     #updateFields()
     #deleteRow()
@@ -207,9 +279,9 @@ if __name__ == "__main__":
     while True:
         print("Menú de Opciones:")
         print("1. Buscar por número de vuelo en Salidas")
-        print("2. Buscar por origen y aerolínea en Salidas")
-        print("3. Buscar por número de vuelo en Llegadas")
-        print("4. Buscar por destino y aerolínea en Llegadas")
+        print("2. Imprimir matriz tridiagonal")
+        print("3. Imprimir matriz de poca densidad")
+        print("4. Buscar en tres dimensiones")
         print("5. Buscar por destino y aerolínea en Salidas y Llegadas (Bidireccional)")
         print("6. Salir")
         
@@ -220,20 +292,18 @@ if __name__ == "__main__":
             searchByVuelo(vuelo)
         
         elif opcion == "2":
-            destino = input("Ingrese el destino que desea buscar en Salidas: ")
-            aerolinea = input("Ingrese la aerolínea que desea buscar en Salidas: ")
-            searchByOrigen(destino, aerolinea)
-        
+            print("\nAqui hay una representacion de una matriz tridiagonal\n")
+            for line in itinerarios_caso_tridiagonal:
+                print(f'{line}\n')
+            
         elif opcion == "3":
-            vuelo = input("Ingrese el número de vuelo que desea buscar en Llegadas: ")
-            # Llama a una función de búsqueda en Llegadas
-            searchByVueloLlegadas(vuelo)
+            print("\nAqui hay una representacion de una matriz de poca densidad\n")
+            for line in itinerarios_caso_poco_denso:
+                print(f'{line}\n')
         
         elif opcion == "4":
-            origen = input("Ingrese el origen que desea buscar en Llegadas: ")
-            aerolinea = input("Ingrese la aerolínea que desea buscar en Llegadas: ")
-            # Llama a una función de búsqueda en Llegadas
-            searchByDestinoLlegadas(origen, aerolinea)
+            numero = input("Ingrese el numero de vuelo que quiere buscar en las tres matrices: ")
+            searchVueloTridimensional(numero)
         
         elif opcion == "5":
             destino = input("Ingrese el destino que desea buscar en Salidas y Llegadas: ")
@@ -241,6 +311,7 @@ if __name__ == "__main__":
             searchByDestinoBidireccional(destino, aerolinea)
         
         elif opcion == "6":
+            print()
             print("Saliendo del programa.")
             break
         
