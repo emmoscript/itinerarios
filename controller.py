@@ -266,7 +266,32 @@ if __name__ == "__main__":
         ("         ","         ", "18:00", "         ", "         "),
           ("      ","         ", "         ", "         ", "Frontier Airlines"),
         ("CANCELADO","2023-09-10", "14:05", 411, "         ")
-    ]        
+    ]
+    
+    #Código Actividad 2.1
+    a = 235.5
+    b = 545.6
+    c = 323.9
+    itinerarios_caso_simetrica = [
+        ("132.1", a, b),
+        (a, "255.99", c),
+        (b, c, "654.8"),
+    ]
+    itinerarios_caso_antisimetrica = [
+        ("132.1", a, b),
+        (-a, "255.99", c),
+        (-b, -c, "654.8"),
+    ]
+    #Asientos donde 0 = no ocupado y 1 = ocupado
+    itinerarios_caso_binario = [
+        "(A, B, C, D, E, F)",
+        (0,1,1,1,0,1),
+        (0,0,0,1,1,0),
+        (1,1,1,1,0,1),
+        (0,0,0,0,0,1),
+        (1,1,1,0,0,1),
+        (0,0,0,0,1,0)
+    ]
     #insertSalida(itinerarios_salida)
     #insertLlegada(itinerarios_llegada)
     #readOrdered("vuelo")
@@ -283,7 +308,10 @@ if __name__ == "__main__":
         print("3. Imprimir matriz de poca densidad")
         print("4. Buscar en tres dimensiones")
         print("5. Buscar por destino y aerolínea en Salidas y Llegadas (Bidireccional)")
-        print("6. Salir")
+        print("6. Imprimir matriz simétrica")
+        print("7. Imprimir matriz anti-simétrica")
+        print("8. Imprimir matriz binaria")
+        print("9. Salir")
         
         opcion = input("Ingrese el número de la opción que desea: ")
         
@@ -311,6 +339,22 @@ if __name__ == "__main__":
             searchByDestinoBidireccional(destino, aerolinea)
         
         elif opcion == "6":
+            for line in itinerarios_caso_simetrica:
+                print(f'\n{line}')    
+            print('\n')
+        
+        elif opcion == "7":
+            for line in itinerarios_caso_antisimetrica:
+                print(f'\n{line}')    
+            print('\n') 
+
+        
+        elif opcion == "8":
+            for line in itinerarios_caso_binario:
+                print(f'\n{line}')    
+            print('\n') 
+        
+        elif opcion == "9":
             print()
             print("Saliendo del programa.")
             break
